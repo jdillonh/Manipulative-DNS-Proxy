@@ -1,4 +1,3 @@
-## Some code based on https://pymotw.com/2/socket/udp.html
 import select
 import socket
 import sys
@@ -6,11 +5,11 @@ import sys
 
 
 def handleUDP(openSock):
-"""
-Handle DNS Query and response over a UDP Connection.
-
-Arguments: openSock -- an open UDP socket that is ready to be recieved on.
-"""
+    """
+    Handle DNS query and response over a UDP connection.
+    
+    Arguments: openSock -- an open UDP socket that is ready to be recieved on.
+    """
     query, add = openSock.recvfrom(4096)
 
     # Create socket for upstream resolver 
@@ -25,19 +24,20 @@ Arguments: openSock -- an open UDP socket that is ready to be recieved on.
   
     rcodeVal = int(bin(ord(data[3])), 2) & 15
     if rcodeVal == 3:
-        #Build DNS Header
+        # rcodeVal == 3 when there is a No Such Name Error
+        # Build fake DNS Header
         data = list(data)
         zero = str(bytearray.fromhex('00'))
         one = str(bytearray.fromhex('01'))
 
-        data[2] = str(bytearray.fromhex('84'))
-        data[3] = zero 
+        data[2]  = str(bytearray.fromhex('84'))
+        data[3]  = zero 
         data[6]  = zero 
         data[7]  = one 
         data[8]  = zero 
         data[9]  = zero
         data[10] = zero
-        data[11] =  zero
+        data[11] = zero
 
         #Add Questions
         i = 12
@@ -49,32 +49,31 @@ Arguments: openSock -- an open UDP socket that is ready to be recieved on.
                 i += 1
 
         #Now i points at the beggining of Answers
-        #Skip query type & class
         i += 3
-        #now put in answer
-        #get rid of rest
         data = data[0:i+1]
-
-
         data = ''.join(data)
 
         data += bytearray.fromhex('c00c')        
         data += zero 
         data += one
         
-        data += zero #class field
+        data += zero #Type field, let it be A (as opposed to MX, NS, etc.)
         data += one 
 
-        data +=  bytearray.fromhex('0000012b') # TTL field
-        data += bytearray.fromhex('0004') #data length
-        data += bytearray.fromhex(ipAddHex) #IP Address
+        data += bytearray.fromhex('0000012b') # TTL field
+        data += bytearray.fromhex('0004')     # data length
+        data += bytearray.fromhex(ipAddHex)   # IP Address
        
-
-
     openSock.sendto(data, add)
     return 0
 
+
 def handleTCP(openSock): 
+    """
+    Handles a DNS query and response over a TCP connection.
+    
+    Arguments: openSock -- an open TCP socket that is ready to be recived on.
+    """
     connSock, userAddTCP = openSock.accept()
 
     ## Receive query from client
@@ -106,7 +105,6 @@ def handleTCP(openSock):
         newMessage = upstreamSock.recv(1024)
         received += len(newMessage)
         data += newMessage
-
 
     ## Send the answer to client
     connSock.send( data )
