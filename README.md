@@ -10,3 +10,5 @@ Most requests are handled through UDP. All requests initally come in over UDP, b
 
 
 If the response comes in with a "No Such Name" response (DNS rcode == 3), then a phony DNS packet is created that redirects the user to the IP Address provided as the first argument to the script.
+
+[image.png]
