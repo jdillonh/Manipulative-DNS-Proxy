@@ -2,7 +2,7 @@ import select
 import socket
 import sys
 
-
+TIMEOUT = None #None -> infinity
 
 def handleUDP(openSock):
     """
@@ -117,7 +117,7 @@ def handleTCP(openSock):
 # Constants and Arguments
 ipAddress = sys.argv[len(sys.argv)-1]
 dnsResolver = '8.8.8.8'
-TIMEOUT = None #None -> infinity
+
 
 
 # Create UDP and TCP sockets
